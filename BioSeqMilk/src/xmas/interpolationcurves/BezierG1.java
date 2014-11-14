@@ -1,7 +1,5 @@
 package xmas.interpolationcurves;
 
-/* Bezier spline with G1 continuity between control points */
-import java.awt.*;
 
 public class BezierG1 extends Bezier {
 

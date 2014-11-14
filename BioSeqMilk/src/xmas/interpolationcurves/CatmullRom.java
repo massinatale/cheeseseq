@@ -1,6 +1,5 @@
 package xmas.interpolationcurves;
 
-import java.awt.*;
 
 public class CatmullRom extends Bspline {
 
