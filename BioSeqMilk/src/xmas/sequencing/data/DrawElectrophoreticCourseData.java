@@ -13,6 +13,7 @@ import ij.process.ImageProcessor;
 public class DrawElectrophoreticCourseData {
 
 	private final DataSingleCourse dataFromXml;
+	private double scaleIntensity = 1.0;
 
 	public DrawElectrophoreticCourseData(final DataSingleCourse dataFromXml) {
 		super();
@@ -70,48 +71,23 @@ public class DrawElectrophoreticCourseData {
 		img.show();
 	}
 
-	public void drawPortionDataInAImage(int start, int end,
-			String nameOfTheSample, int intensityThreashold, int tollerance) throws Exception {
-
-		if ((end - start) > 1000) {
+	public void drawPortionDataInAImage(final int start, final int end,
+			final String dye, final int intensityThreashold, final int tollerance) throws Exception {
+		int imageWitdht = end - start;
+		if ((end - start) > imageWitdht) {
 			throw new Exception("segli una porzione inferiore a 1000");
 		}
-		Set<String> keys = dataFromXml.getDataCollectionMap().keySet();
-		Iterator<String> iter = keys.iterator();
-
-		List<Integer[]> picks = findPicks(start, end, nameOfTheSample, intensityThreashold, tollerance);
-		double scaleIntensity = 1.0;
-		while (iter.hasNext()) {
-			String key = iter.next();
-			if (key.contains(nameOfTheSample)) {
-				int maxOfIntensity = 0;
-				for (int i = 0; i < (end - start); i++) {
-					if (dataFromXml.getDataCollectionMap().get(key)[i + start] > maxOfIntensity) {
-						maxOfIntensity = dataFromXml.getDataCollectionMap()
-								.get(key)[i + start];
-					}
-				}
-				scaleIntensity = 1.0;
-				if (maxOfIntensity > 600) {
-					scaleIntensity = 600.0 / (double) maxOfIntensity;
-				}
-				System.out.println("max:" + maxOfIntensity + " scale:"
-						+ scaleIntensity);
-				Integer scaledData[] = new Integer[end - start];
-				for (int i = 0; i < (end - start); i++) {
-					scaledData[i] = (int) (dataFromXml.getDataCollectionMap()
-							.get(key)[i + start] * scaleIntensity);
-				}
-				dataFromXml.addScaledDataMap(key, scaledData);
-			}
-		} //
-			// System.out.println("" + dataFromXml.getDataScaledMap().size());
-		ImageProcessor processor = new ColorProcessor(1000, 700);
+//		Set<String> keys = dataFromXml.getDataCollectionMap().keySet();
+//		Iterator<String> iter = keys.iterator();
+//
+		List<Integer[]> picks = findPicks(start, end, dye, intensityThreashold, tollerance);
+		calculate(start, end, dye);
+		ImageProcessor processor = new ColorProcessor(imageWitdht, 700);
 		processor.setColor(Color.white);
 		processor.fill();
 		// processor.setColor(Color.blue);
 		processor.setColor(Color.black);
-		processor.drawLine(0, 600, 1000, 600);
+		processor.drawLine(0, 600, imageWitdht, 600);
 		Color colors[] = { Color.blue, Color.cyan, Color.green, Color.magenta };
 		// /////////////////////////////
 		Set<String> keysScaled = dataFromXml.getDataScaledMap().keySet();
@@ -143,10 +119,40 @@ public class DrawElectrophoreticCourseData {
 		img.show();
 	} // drawPortionDataInAImage
 
-	public List<Integer[]> findPicks(int start, int end, String nameOfTheSample, int intensityThreashold, int tollerance) {
+	
+	private void calculate(int start, int end, String dye){
 		Set<String> keys = dataFromXml.getDataCollectionMap().keySet();
 		Iterator<String> iter = keys.iterator();
-		
+
+		while (iter.hasNext()) {
+			String key = iter.next();
+			if (key.contains(dye)) {
+				int maxOfIntensity = 0;
+				for (int i = 0; i < (end - start); i++) {
+					if (dataFromXml.getDataCollectionMap().get(key)[i + start] > maxOfIntensity) {
+						maxOfIntensity = dataFromXml.getDataCollectionMap()
+								.get(key)[i + start];
+					}
+				}
+				scaleIntensity = 1.0;
+				if (maxOfIntensity > 600) {
+					scaleIntensity = 600.0 / (double) maxOfIntensity;
+				}
+				System.out.println("max:" + maxOfIntensity + " scale:"
+						+ scaleIntensity);
+				Integer scaledData[] = new Integer[end - start];
+				for (int i = 0; i < (end - start); i++) {
+					scaledData[i] = (int) (dataFromXml.getDataCollectionMap()
+							.get(key)[i + start] * scaleIntensity);
+				}
+				dataFromXml.addScaledDataMap(key, scaledData);
+			}
+		} //
+	} // calculate
+	
+	private List<Integer[]> findPicks(int start, int end, String nameOfTheSample, int intensityThreashold, int tollerance) {
+		Set<String> keys = dataFromXml.getDataCollectionMap().keySet();
+		Iterator<String> iter = keys.iterator();
 		List<Integer[]> picks = new ArrayList<>();
 		while (iter.hasNext()) {
 			String key = iter.next();
@@ -164,7 +170,7 @@ public class DrawElectrophoreticCourseData {
 				}
 			}
 		} // 
-		System.out.println(picks.size());
+		//System.out.println(picks.size());
 		return picks;
 	}
 

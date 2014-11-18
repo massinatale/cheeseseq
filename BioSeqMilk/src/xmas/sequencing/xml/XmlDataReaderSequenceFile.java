@@ -14,12 +14,9 @@ import xmas.sequencing.data.DrawElectrophoreticCourseData;
 
 public class XmlDataReaderSequenceFile {
 
-	public DataSingleCourse dataUploadFormXml() throws Exception {
+	public DataSingleCourse dataUploadFormXml(final String path, final String fileName) throws Exception {
 
 		DataSingleCourse dataFromXml = new DataSingleCourse();
-
-		String path = "/home/massimo/ProgettiCondivisi/cheeseseq/BioSeqMilk/data/";
-		String fileName = "BIE_DIC_TOM2_1.10_720_H05_2014-07-15_2.fsa.xml";
 		dataFromXml.setFileSource(fileName);
 
 		SAXBuilder builder = new SAXBuilder();
@@ -111,9 +108,12 @@ public class XmlDataReaderSequenceFile {
 	// ///////////////////////////////////////////////////////////////
 	// main
 	public static void main(String args[]) throws Exception {
+		
 		XmlDataReaderSequenceFile dataReaderSequenceFile = new XmlDataReaderSequenceFile();
+		final String path = "/home/massimo/ProgettiCondivisi/cheeseseq/BioSeqMilk/data/";
+		final String fileName = "BIE_DIC_TOM2_1.10_720_H05_2014-07-15_2.fsa.xml";
 		DataSingleCourse dataFromXml = dataReaderSequenceFile
-				.dataUploadFormXml();
+				.dataUploadFormXml(path, fileName);
 		DrawElectrophoreticCourseData drawing = new DrawElectrophoreticCourseData(
 				dataFromXml);
 	} //
