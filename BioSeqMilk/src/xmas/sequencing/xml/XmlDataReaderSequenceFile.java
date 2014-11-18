@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
 import xmas.sequencing.data.DataSingleCourse;
@@ -20,8 +19,9 @@ public class XmlDataReaderSequenceFile {
 		dataFromXml.setFileSource(fileName);
 
 		SAXBuilder builder = new SAXBuilder();
-		File xmlFile = new File(path.concat(fileName));
+		final File xmlFile = new File(path.concat(fileName));
 
+		System.out.println(xmlFile.toString());
 		Document document = (Document) builder.build(xmlFile);
 		Element rootNode = document.getRootElement();
 		// System.out.println("# rootNode: " + rootNode.getName());

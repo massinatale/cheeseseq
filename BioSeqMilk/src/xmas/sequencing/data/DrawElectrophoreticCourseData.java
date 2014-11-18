@@ -1,12 +1,16 @@
 package xmas.sequencing.data;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import ij.ImagePlus;
+import ij.io.FileSaver;
+import ij.io.ImageWriter;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 
@@ -71,16 +75,18 @@ public class DrawElectrophoreticCourseData {
 		img.show();
 	}
 
-	public void drawPortionDataInAImage(final int start, final int end,
-			final String dye, final int intensityThreashold, final int tollerance) throws Exception {
+	public ImagePlus drawPortionDataInAImage(final int start, final int end,
+			final String dye, final int intensityThreashold,
+			final int tollerance) throws Exception {
 		int imageWitdht = end - start;
 		if ((end - start) > imageWitdht) {
 			throw new Exception("segli una porzione inferiore a 1000");
 		}
-//		Set<String> keys = dataFromXml.getDataCollectionMap().keySet();
-//		Iterator<String> iter = keys.iterator();
-//
-		List<Integer[]> picks = findPicks(start, end, dye, intensityThreashold, tollerance);
+		// Set<String> keys = dataFromXml.getDataCollectionMap().keySet();
+		// Iterator<String> iter = keys.iterator();
+		//
+		List<Integer[]> picks = findPicks(start, end, dye, intensityThreashold,
+				tollerance);
 		calculate(start, end, dye);
 		ImageProcessor processor = new ColorProcessor(imageWitdht, 700);
 		processor.setColor(Color.white);
@@ -110,17 +116,19 @@ public class DrawElectrophoreticCourseData {
 			}
 		}
 		processor.setColor(Color.red);
-		for (Integer[] p : picks){
-			processor.drawLine(p[0] - start, 598, p[0] - start,  605);
-			processor.drawLine(p[0] - start, 600 - (int)(p[1] * scaleIntensity) - 5, p[0] - start,  600 - (int)(p[1] * scaleIntensity));
+		for (Integer[] p : picks) {
+			processor.drawLine(p[0] - start, 598, p[0] - start, 605);
+			processor.drawLine(p[0] - start,
+					600 - (int) (p[1] * scaleIntensity) - 5, p[0] - start,
+					600 - (int) (p[1] * scaleIntensity));
 		}
-		
+
 		ImagePlus img = new ImagePlus("test.png", processor);
 		img.show();
+		return img;
 	} // drawPortionDataInAImage
 
-	
-	private void calculate(int start, int end, String dye){
+	private void calculate(int start, int end, String dye) {
 		Set<String> keys = dataFromXml.getDataCollectionMap().keySet();
 		Iterator<String> iter = keys.iterator();
 
@@ -149,8 +157,9 @@ public class DrawElectrophoreticCourseData {
 			}
 		} //
 	} // calculate
-	
-	private List<Integer[]> findPicks(int start, int end, String nameOfTheSample, int intensityThreashold, int tollerance) {
+
+	private List<Integer[]> findPicks(int start, int end,
+			String nameOfTheSample, int intensityThreashold, int tollerance) {
 		Set<String> keys = dataFromXml.getDataCollectionMap().keySet();
 		Iterator<String> iter = keys.iterator();
 		List<Integer[]> picks = new ArrayList<>();
@@ -158,10 +167,15 @@ public class DrawElectrophoreticCourseData {
 			String key = iter.next();
 			if (key.contains(nameOfTheSample)) {
 				for (int i = tollerance; i < (end - start) - tollerance; i++) {
-					int intensityPrima = dataFromXml.getDataCollectionMap().get(key)[i + start - tollerance];
-					int intensity = dataFromXml.getDataCollectionMap().get(key)[i + start];
-					int intensityDopo = dataFromXml.getDataCollectionMap().get(key)[i + start +tollerance];
-					if ((intensity > intensityThreashold) && (intensityPrima < intensity) && (intensityDopo < intensity)){
+					int intensityPrima = dataFromXml.getDataCollectionMap()
+							.get(key)[i + start - tollerance];
+					int intensity = dataFromXml.getDataCollectionMap().get(key)[i
+							+ start];
+					int intensityDopo = dataFromXml.getDataCollectionMap().get(
+							key)[i + start + tollerance];
+					if ((intensity > intensityThreashold)
+							&& (intensityPrima < intensity)
+							&& (intensityDopo < intensity)) {
 						Integer[] values = new Integer[2];
 						values[0] = i + start;
 						values[1] = intensity;
@@ -169,9 +183,26 @@ public class DrawElectrophoreticCourseData {
 					}
 				}
 			}
-		} // 
-		//System.out.println(picks.size());
+		} //
+			// System.out.println(picks.size());
 		return picks;
+	}
+
+	public void save(final ImagePlus img, final String directory, final String name)
+			throws Exception {
+		if ((name == null) || (img == null) || (directory == null))
+			return;
+		if (!name.endsWith(".tif")) {
+			throw new Exception("L'immagine deve avere l'esentione .tif");
+		} //
+
+		String fileName = directory + name;
+		if (img.getStackSize() > 1) {
+			throw new Exception("L'immagine contiene più di uno stack");
+		} else {
+			new FileSaver(img).saveAsTiff(fileName);
+		} //
+
 	}
 
 }
